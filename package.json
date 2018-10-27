@@ -5,15 +5,16 @@
   "author": "waheng chang <wahengchang@gmail.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
-    "start": "npm run dev",
+    "dev": "node locator && webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "start": "node locator && npm run dev",
     "unit": "jest --config test/unit/jest.conf.js --coverage",
     "test": "npm run unit",
     "lint": "eslint --ext .js,.vue src test/unit/specs",
-    "build": "node build/build.js",
+    "build": "node locator && node build/build.js",
     "precommit": "npm test && lint-staged"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
     "vuetify": "^1.0.0"

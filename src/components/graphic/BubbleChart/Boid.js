@@ -1,7 +1,14 @@
 /* eslint-disable */
-const SEPARATION_DIS = 25.0
+const SEPARATION_DIS = 20
+const MAX_SPEED = 4
+const MAX_FORCE = 0.05 
+const DEFAULT_R = 4
 
-function Boid(x, y, {p5, sketch, canvasW, canvasH, separationDis}) {
+const SEP_FACTOR = 1
+const ALIGN_FACTOR = 0.5
+const COH_FACTOR = 0.5
+
+function Boid(x, y, r, {p5, color, sketch, canvasW, canvasH, separationDis, maxspeed, maxforce, sepFactor, cohFactor, alignFactor}) {
   this.p5 = p5
   this.sketch = sketch
   this.canvasW = canvasW
@@ -9,10 +16,14 @@ function Boid(x, y, {p5, sketch, canvasW, canvasH, separationDis}) {
   this.acceleration = sketch.createVector(0, 0)
   this.velocity = sketch.createVector(sketch.random(-1, 1), sketch.random(-1, 1))
   this.position = sketch.createVector(x, y)
-  this.r = 4.0
-  this.maxspeed = 4
-  this.maxforce = 0.05 
-  this.separationDis || SEPARATION_DIS
+  this.r = r || DEFAULT_R
+  this.maxspeed = maxspeed || MAX_SPEED
+  this.maxforce = maxforce || MAX_FORCE
+  this.separationDis = separationDis || SEPARATION_DIS
+  this.sepFactor = sepFactor ||SEP_FACTOR
+  this.alignFactor = alignFactor ||ALIGN_FACTOR
+  this.cohFactor = cohFactor ||COH_FACTOR
+  this.color = color || [200,200,200]
 }
 
 Boid.prototype.run = function (boids) {
@@ -33,9 +44,9 @@ Boid.prototype.flock = function(boids) {
   var ali = this.align(boids)      // Alignment
   var coh = this.cohesion(boids)   // Cohesion
   // Arbitrarily weight these forces
-  sep.mult(1.5)
-  ali.mult(1.0)
-  coh.mult(1.0)
+  sep.mult(this.sepFactor)
+  ali.mult(this.alignFactor)
+  coh.mult(this.cohFactor)
   // Add the force vectors to acceleration
   this.applyForce(sep)
   this.applyForce(ali)
@@ -66,10 +77,11 @@ Boid.prototype.seek = function(target) {
 }
 
 Boid.prototype.render = function() {
-  const {sketch, r} = this
+  const {sketch, r, color} = this
+  const [red,g,b] = color
   const opacity = sketch.map(this.velocity.mag(),  0,  this.maxspeed,  0,  200)
   var theta = this.velocity.heading() + sketch.radians(90)
-  sketch.fill(200,  200,  200,  opacity)
+  sketch.fill(red,  g,  b,  opacity)
   sketch.noStroke()
   // sketch.stroke(200)
   sketch.push()
@@ -99,15 +111,14 @@ Boid.prototype.borders = function() {
 Boid.prototype.separate = function(boids) {
   const desiredseparation = this.separationDis
   const steer = this.sketch.createVector(0, 0)
-  const count = 0
+  let count = 0
   // For every boid in the system,  check if it's too close
   for (let i = 0; i < boids.length; i++) {
-    const d = this.p5.Vector.dist(this.position, boids[i].position)
-    const thisR = this.r || 0
     const thatR = boids[i].r || 0
-    const radiusD = thatR + thisR
+    const radiusD = thatR + this.r
+    const d = this.p5.Vector.dist(this.position, boids[i].position) - radiusD
     // If the distance is greater than 0 and less than an arbitrary amount (0 when you are yourself)
-    if ((d > 0) && (d < desiredseparation + radiusD)) {
+    if ((d > 0) && (d < desiredseparation)) {
       // Calculate vector pointing away from neighbor
       const diff = this.p5.Vector.sub(this.position, boids[i].position)
       diff.normalize()

@@ -1,5 +1,9 @@
 <template>
-  <v-app dark>
+
+    <v-content>
+      <router-view/>
+    </v-content>
+  <!-- <v-app dark>
     <v-navigation-drawer
       persistent
       :mini-variant="miniVariant"
@@ -56,7 +60,7 @@
     <v-footer :fixed="fixed" app>
       <span>&copy; 2017</span>
     </v-footer>
-  </v-app>
+  </v-app> -->
 </template>
 
 <script>
